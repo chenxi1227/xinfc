@@ -1,4 +1,4 @@
-name: Build xinfc
+name: Build xinfc for AX3000T
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -17,14 +18,24 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential git
+          sudo apt install -y build-essential git wget xz-utils
+
+      - name: Download OpenWrt SDK (ARM64 ipq807x)
+        run: |
+          wget https://downloads.openwrt.org/releases/23.05.2/targets/ipq807x/generic/openwrt-sdk-23.05.2-ipq807x-generic.Linux-x86_64.tar.xz
+          tar -xf openwrt-sdk-23.05.2-ipq807x-generic.Linux-x86_64.tar.xz
+          mv xinfc openwrt-sdk-23.05.2-ipq807x-generic/package/
 
       - name: Build xinfc
         run: |
-          ./build.sh
+          cd openwrt-sdk-23.05.2-ipq807x-generic
+          make package/xinfc/compile V=s
+
+      - name: List build outputs
+        run: ls -R openwrt-sdk-23.05.2-ipq807x-generic/bin/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xinfc-binaries
-          path: xinfc-wsc
+          name: xinfc-arm64
+          path: openwrt-sdk-23.05.2-ipq807x-generic/bin/packages/
