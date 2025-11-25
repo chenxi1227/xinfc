@@ -28,18 +28,18 @@ jobs:
       - name: Clone xinfc source
         run: |
           git clone https://github.com/Caian/xinfc.git
-          mv xinfc openwrt-sdk-24.10.4-mediatek-filogic/package/
+          mv xinfc openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/package/
 
       - name: Build xinfc
         run: |
-          cd openwrt-sdk-24.10.4-mediatek-filogic
+          cd openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64
           make package/xinfc/compile V=s
 
       - name: List build outputs
-        run: ls -R openwrt-sdk-24.10.4-mediatek-filogic/bin/
+        run: ls -R openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/bin/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: xinfc-filogic-arm64
-          path: openwrt-sdk-24.10.4-mediatek-filogic/bin/packages/
+          path: openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/bin/packages/
