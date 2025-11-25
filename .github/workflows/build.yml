@@ -1,82 +1,36 @@
-name: Build xinfc for AX3000T (Filogic)
+- name: Clone xinfc source and add OpenWrt Makefile
+  run: |
+    git clone https://github.com/Caian/xinfc.git
+    cat << 'EOF' > xinfc/Makefile
+    include \$(TOPDIR)/rules.mk
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    PKG_NAME:=xinfc
+    PKG_RELEASE:=1
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+    PKG_SOURCE_PROTO:=git
+    PKG_SOURCE_URL:=https://github.com/Caian/xinfc.git
+    PKG_SOURCE_VERSION:=HEAD
 
-    steps:
-      - name: Checkout workflow repo
-        uses: actions/checkout@v4
+    PKG_BUILD_DIR:=\$(BUILD_DIR)/\$(PKG_NAME)
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential git wget xz-utils zstd
+    include \$(INCLUDE_DIR)/package.mk
 
-      - name: Download OpenWrt SDK (MediaTek Filogic)
-        run: |
-          wget https://downloads.openwrt.org/releases/24.10.4/targets/mediatek/filogic/openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst
-          tar --use-compress-program=unzstd -xf openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+    define Package/xinfc
+      SECTION:=utils
+      CATEGORY:=Utilities
+      TITLE:=Xiaomi NFC tools
+      DEPENDS:=+i2c-tools
+    endef
 
-      - name: Clone xinfc source and add OpenWrt Makefile
-        run: |
-          git clone https://github.com/Caian/xinfc.git
-          cat << 'EOF' > xinfc/Makefile
-          include \$(TOPDIR)/rules.mk
+    define Package/xinfc/description
+      Tools to configure Xiaomi router NFC chip for Wi-Fi sharing.
+    endef
 
-          PKG_NAME:=xinfc
-          PKG_RELEASE:=1
+    define Package/xinfc/install
+    \t\$(INSTALL_DIR) \$(1)/usr/bin
+    \t\$(INSTALL_BIN) \$(PKG_BUILD_DIR)/xinfc-wsc \$(1)/usr/bin/
+    endef
 
-          PKG_SOURCE_PROTO:=git
-          PKG_SOURCE_URL:=https://github.com/Caian/xinfc.git
-          PKG_SOURCE_VERSION:=HEAD
-
-          PKG_BUILD_DIR:=\$(BUILD_DIR)/\$(PKG_NAME)
-
-          include \$(INCLUDE_DIR)/package.mk
-
-          define Package/xinfc
-            SECTION:=utils
-            CATEGORY:=Utilities
-            TITLE:=Xiaomi NFC tools
-            DEPENDS:=+i2c-tools
-          endef
-
-          define Package/xinfc/description
-            Tools to configure Xiaomi router NFC chip for Wi-Fi sharing.
-          endef
-
-          define Package/xinfc/install
-            \$(INSTALL_DIR) \$(1)/usr/bin
-            \$(INSTALL_BIN) \$(PKG_BUILD_DIR)/xinfc-wsc \$(1)/usr/bin/
-          endef
-
-          \$(eval \$(call BuildPackage,xinfc))
-          EOF
-          mv xinfc openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/package/
-
-      - name: Prepare SDK config
-        run: |
-          cd openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64
-          make defconfig
-
-      - name: Build xinfc
-        run: |
-          cd openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64
-          make package/xinfc/compile V=s
-
-      - name: List build outputs
-        run: ls -R openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/bin/
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xinfc-filogic-arm64
-          path: openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/bin/packages/
+    \$(eval \$(call BuildPackage,xinfc))
+    EOF
+    mv xinfc openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/package/
