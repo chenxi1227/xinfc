@@ -30,6 +30,11 @@ jobs:
           git clone https://github.com/Caian/xinfc.git
           mv xinfc openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64/package/
 
+      - name: Prepare SDK config
+        run: |
+          cd openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64
+          make defconfig
+
       - name: Build xinfc
         run: |
           cd openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64
