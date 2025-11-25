@@ -1,4 +1,4 @@
-name: Build xinfc for AX3000T
+name: Build xinfc for AX3000T (Filogic)
 
 on:
   push:
@@ -12,30 +12,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout workflow repo
         uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential git wget xz-utils
+          sudo apt install -y build-essential git wget xz-utils zstd
 
-      - name: Download OpenWrt SDK (ARM64 ipq806x)
+      - name: Download OpenWrt SDK (MediaTek Filogic)
         run: |
-          wget https://downloads.openwrt.org/releases/24.10.4/targets/ipq806x/generic/openwrt-sdk-24.10.4-ipq806x-generic_gcc-13.3.0_musl_eabi.Linux-x86_64.tar.zst
-          tar -xf openwrt-sdk-24.10.4-ipq806x-generic_gcc-13.3.0_musl_eabi.Linux-x86_64.tar.zst
-          mv xinfc openwrt-sdk-24.10.4-ipq806x-generic/package/
+          wget https://downloads.openwrt.org/releases/24.10.4/targets/mediatek/filogic/openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+          tar --use-compress-program=unzstd -xf openwrt-sdk-24.10.4-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+
+      - name: Clone xinfc source
+        run: |
+          git clone https://github.com/Caian/xinfc.git
+          mv xinfc openwrt-sdk-24.10.4-mediatek-filogic/package/
 
       - name: Build xinfc
         run: |
-          cd openwrt-sdk-24.10.4-ipq806x-generic
+          cd openwrt-sdk-24.10.4-mediatek-filogic
           make package/xinfc/compile V=s
 
       - name: List build outputs
-        run: ls -R openwrt-sdk-24.10.4-ipq806x-generic/bin/
+        run: ls -R openwrt-sdk-24.10.4-mediatek-filogic/bin/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xinfc-arm64
-          path: openwrt-sdk-24.10.4-ipq806x-generic/bin/packages/
+          name: xinfc-filogic-arm64
+          path: openwrt-sdk-24.10.4-mediatek-filogic/bin/packages/
